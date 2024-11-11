@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplication Practice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        #timer {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        #problem {
+            font-size: 1.5em;
+        }
+        #input {
+            font-size: 1.2em;
+            padding: 5px;
+        }
+        #score {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        #incorrect {
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: red;
+        }
+        #retry-button {
+            font-size: 1.2em;
+            margin-top: 20px;
+            padding: 10px;
+            cursor: pointer;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="timer">Time Left: 60s</div>
+    <div id="problem"></div>
+    <input type="number" id="input" placeholder="Your answer here">
+    <div id="score"></div>
+    <div id="incorrect"></div>
+    <button id="retry-button" onclick="resetGame()">Try Again</button>
+
+    <script>
+        const problems = [];
+        for (let i = 2; i <= 12; i++) {
+            for (let j = 2; j <= 12; j++) {
+                problems.push({ a: i, b: j });
+            }
+        }
+
+        let currentProblemIndex;
+        let timer;
+        let timeLeft = 60;
+        let correctDigits = 0;
+        let currentProblem;
+        let incorrectAnswers = [];
+        const inputField = document.getElementById('input');
+        const timerDisplay = document.getElementById('timer');
+        const problemDisplay = document.getElementById('problem');
+        const scoreDisplay = document.getElementById('score');
+        const incorrectDisplay = document.getElementById('incorrect');
+        const retryButton = document.getElementById('retry-button');
+
+        function startTimer() {
+            timer = setInterval(function () {
+                timeLeft--;
+                timerDisplay.innerText = `Time Left: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    inputField.disabled = true;
+                    calculateScore();
+                    displayIncorrectAnswers();
+                    retryButton.style.display = 'inline-block';
+                }
+            }, 1000);
+        }
+
+        function generateProblem() {
+            currentProblemIndex = Math.floor(Math.random() * problems.length);
+            currentProblem = problems[currentProblemIndex];
+            problemDisplay.innerText = `What is ${currentProblem.a} x ${currentProblem.b}?`;
+        }
+
+        function calculateDigitsCorrect(answer, correctAnswer) {
+            let correctCount = 0;
+            const answerStr = answer.toString();
+            const correctAnswerStr = correctAnswer.toString();
+            for (let i = 0; i < correctAnswerStr.length; i++) {
+                if (answerStr[i] === correctAnswerStr[i]) {
+                    correctCount++;
+                }
+            }
+            return correctCount;
+        }
+
+        function calculateScore() {
+            scoreDisplay.innerText = `Digits Correct Per Minute (DCPM): ${correctDigits}`;
+        }
+
+        function displayIncorrectAnswers() {
+            let incorrectText = "Incorrect Answers:\n";
+            incorrectAnswers.forEach(item => {
+                incorrectText += `Problem: ${item.problem}, Your Answer: ${item.answer}\n`;
+            });
+            incorrectDisplay.innerText = incorrectText;
+        }
+
+        function resetGame() {
+            timeLeft = 60;
+            correctDigits = 0;
+            incorrectAnswers = [];
+            inputField.disabled = false;
+            inputField.value = '';
+            timerDisplay.innerText = `Time Left: 60s`;
+            scoreDisplay.innerText = '';
+            incorrectDisplay.innerText = '';
+            retryButton.style.display = 'none';
+            generateProblem();
+            startTimer();
+        }
+
+        inputField.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && timeLeft > 0) {
+                const answer = parseInt(inputField.value);
+                if (!isNaN(answer)) {
+                    const correctAnswer = currentProblem.a * currentProblem.b;
+                    if (answer !== correctAnswer) {
+                        incorrectAnswers.push({ problem: `${currentProblem.a} x ${currentProblem.b}`, answer: answer });
+                    }
+                    correctDigits += calculateDigitsCorrect(answer, correctAnswer);
+                }
+                inputField.value = '';
+                generateProblem();
+            }
+        });
+
+        generateProblem();
+        startTimer();
+    </script>
+</body>
+</html>
+
